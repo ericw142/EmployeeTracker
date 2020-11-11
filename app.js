@@ -32,12 +32,15 @@ function init() {
             type: 'list',
             name: 'select',
             message: 'Select one of the following:',
-            choices: ['View All Employees', 'Add Employee', 'Remove Employee', 
+            choices: ['Quit', 'View All Employees', 'Add Employee', 'Remove Employee', 
                     'View All Roles', 'Add Role', 'Remove Role', 
                     'View All Departments', 'Add Department', 'Remove Department']
         }
     ]).then((res) => {
         switch(res.select) {
+        case('Quit'):
+            end();
+            break;
             // EMPLOYEE
         case('View All Employees'): 
             view('employee');
@@ -73,23 +76,35 @@ function init() {
 }
 
 function view(table) {
-    let query = "SELECT * FROM " + table;
-    connection.query(
+    // Display Employee info alongside role info
+    if (table === 'employee') {
+        let query = "SELECT e.id, e.first_name, e.last_name, r.title, r.salary FROM employee e INNER JOIN role r ON e.role_id = r.id"
+        connection.query(
+            query, 
+            function(err, res) {
+                if (err) throw err;
+                let values = [];
+
+                for (var i = 0; i < res.length; i++) {
+                    values.push([res[i].id, res[i].first_name, res[i].last_name, res[i].title, res[i].salary]);
+                }
+                console.table(['id','First Name', 'Last Name', 'Title', 'Salary'], values);
+            }
+        )
+        init();
+    } else {
+        let query = "SELECT * FROM " + table;
+        connection.query(
         query,
         function(err, res) {
             if (err) throw err;
             let values = [];
 
-            if (table === 'employee') {
+            if (table === 'role') {
                 for (var i = 0; i < res.length; i++) {
-                    values.push([res[i].first_name, res[i].last_name]);
+                    values.push([res[i].id, res[i].title, res[i].salary]);
                 }
-                console.table(['First Name', 'Last Name'], values);
-            } else if (table === 'role') {
-                for (var i = 0; i < res.length; i++) {
-                    values.push([res[i].title, res[i].salary]);
-                }
-                console.table(['Title', 'Salary'], values);
+                console.table(['id', 'Title', 'Salary'], values);
             } else {
                 for (var i = 0; i < res.length; i++) {
                     values.push([res[i].id, res[i].name]);
@@ -97,40 +112,63 @@ function view(table) {
                 console.table(['Department ID', 'Department Name'], values);
             }
             
-            connection.end();
+            init();
         }
     )
+    }
+    
 }
 
 function add(table) {
     if (table === 'employee') {
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'first_name',
-                message: "What is the employee's first name?"
-            },
-            {
-                type: 'input',
-                name: 'last_name',
-                message: "What is the employee's last name?"
+        let q = "SELECT * FROM role";
+        connection.query(
+            q,
+            function(err, res) {
+                if (err) throw err;
+                let roleArr = [];
+
+                for (var i = 0; i < res.length; i++) {
+                    roleArr.push(res[i].title);
+                };
+
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'first_name',
+                        message: "What is the employee's first name?"
+                    },
+                    {
+                        type: 'input',
+                        name: 'last_name',
+                        message: "What is the employee's last name?"
+                    },
+                    {
+                        type: 'list',
+                        name: 'role_id',
+                        message: "What is the employee's role?",
+                        choices: roleArr
+                    }
+                ]).then((res) => {
+                    let finalid = roleArr.findIndex((role) => res.role_id) + 1;
+                    let query = "INSERT INTO employee SET ?";
+                    connection.query(
+                        query,
+                        {
+                            first_name: res.first_name,
+                            last_name: res.last_name,
+                            role_id: finalid
+                        },
+                        function(err, result) {
+                            if (err) throw err;
+                            console.log("Updated Employees Database with " + res.first_name + "'s information.");
+                        }
+                    )
+                    init();
+                })
             }
-        ]).then((res) => {
-            console.log(res)
-            let query = "INSERT INTO employee SET ?";
-            connection.query(
-                query,
-                {
-                    first_name: res.first_name,
-                    last_name: res.last_name,
-                },
-                function(err, result) {
-                    if (err) throw err;
-                    console.log("Updated Employees Database with " + res.first_name + "'s information.");
-                }
-            )
-            connection.end();
-        })
+        )
+        
     } else if (table === 'role') {
         inquirer.prompt([
             {
@@ -156,7 +194,7 @@ function add(table) {
                     console.log("Updated Roles Database with " + res.title + ".");
                 }
             )
-            connection.end();
+            init();
         })
     } else {
         inquirer.prompt([
@@ -177,23 +215,35 @@ function add(table) {
                     console.log("Updated Departments Database with " + res.name + ".");
                 }
             )
-            connection.end();
+            init();
         })
     }
-    
-    
 }
 
 function remove(table) {
+    let query = "SELECT * FROM " + table;
     connection.query(
-        "SELECT * FROM " + table,
+        query,
         function(err, res) {
             if (err) throw err;
             let resultsArr = [];
 
-            for (var i = 0; i < res.length; i++) {
-                resultsArr.push(res[i]);
-            };
+            if (table === 'employee') {
+                for (var i = 0; i < res.length; i++) {
+                    resultsArr.push(res[i].first_name);
+                };
+                var queryTwo = "DELETE FROM " + table + " WHERE first_name = ?";
+            } else if (table === 'role') {
+                for (var i = 0; i < res.length; i++) {
+                    resultsArr.push(res[i].title);
+                };
+                var queryTwo = "DELETE FROM " + table + " WHERE title = ?";
+            } else {
+                for (var i = 0; i < res.length; i++) {
+                    resultsArr.push(res[i].name);
+                };
+                var queryTwo = "DELETE FROM " + table + " WHERE name = ?";
+            }
 
             inquirer.prompt([
                 {
@@ -203,15 +253,21 @@ function remove(table) {
                     choices: resultsArr
                 }
             ]).then((res) => {
-                let query = "DELETE FROM " + table + " WHERE ?";
                 connection.query(
-                    query,
+                    queryTwo,
                     res.prompt,
                     function(err, result) {
                         if (err) throw err;
+                        console.log('Deleted ' + res.prompt);
                     }
                 )
+                init();
             })
         }
     )   
+}
+
+function end() {
+    console.log("Goodbye");
+    connection.end();
 }
