@@ -1,0 +1,22 @@
+-- Run this after running schema.sql
+INSERT INTO department (name) VALUES ('Sales')
+INSERT INTO department (name) VALUES ('Engineering')
+INSERT INTO department (name) VALUES ('Finance')
+INSERT INTO department (name) VALUES ('Legal')
+INSERT INTO department (name) VALUES ('Human Resource Management')
+
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('John', 'Smith', 1)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Clark', 'Roy', 2)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Allison', 'Gaines', 3)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Shannon', 'Warren', 4)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Cole', 'Nicholson', 5)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Ciara', 'Laing', 6)
+INSERT INTO employee (first_name, last_name, role_id) VALUES ('Lucas', 'Gallagher', 7)
+
+INSERT INTO role (title, salary, department_id) VALUES ('Sales Lead', 100000, 1)
+INSERT INTO role (title, salary, department_id) VALUES ('Salesperson', 80000, 1)
+INSERT INTO role (title, salary, department_id) VALUES ('Lead Engineer', 150000, 2)
+INSERT INTO role (title, salary, department_id) VALUES ('Software Engineer', 120000, 2)
+INSERT INTO role (title, salary, department_id) VALUES ('Account Manager', 160000, 3)
+INSERT INTO role (title, salary, department_id) VALUES ('Accountant', 125000, 3)
+INSERT INTO role (title, salary, department_id) VALUES ('Lawyer', 190000, 4)

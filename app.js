@@ -33,7 +33,7 @@ function init() {
             name: 'select',
             message: 'Select one of the following:',
             choices: ['Quit', 'View All Employees', 'Add Employee', 'Remove Employee', 
-                    'View All Roles', 'Add Role', 'Remove Role', 
+                    'View All Roles', 'Add Role', 'Remove Role', 'Update Role', 
                     'View All Departments', 'Add Department', 'Remove Department']
         }
     ]).then((res) => {
@@ -60,6 +60,9 @@ function init() {
             break;
         case('Remove Role'):
             remove('role');
+            break;
+        case('Update Role'):
+            update();
             break;
             // DEPARTMENT
         case('View All Departments'): 
@@ -88,6 +91,7 @@ function view(table) {
                 for (var i = 0; i < res.length; i++) {
                     values.push([res[i].id, res[i].first_name, res[i].last_name, res[i].title, res[i].salary]);
                 }
+                console.log("------------------------");
                 console.table(['id','First Name', 'Last Name', 'Title', 'Salary'], values);
             }
         )
@@ -218,6 +222,54 @@ function add(table) {
             init();
         })
     }
+}
+
+function update() {
+    let query = "SELECT * FROM role";
+    connection.query(
+        query,
+        function(err, res) {
+            if (err) throw err;
+                let roleArr = [];
+
+                for (var i = 0; i < res.length; i++) {
+                    roleArr.push(res[i].title);
+                };
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'roleChoice',
+                        message: 'What is the role you would like to update?',
+                        choices: roleArr
+                    },
+                    {
+                        type: 'input',
+                        name: 'newTitle',
+                        message: 'What is the new title?'
+                    },
+                    {
+                        type: 'input',
+                        name: 'newSalary',
+                        message: 'What is the new salary?'
+                    }
+                ]).then((res) => {
+                    let query = "UPDATE role SET title = ?, salary = ? WHERE title = ?";
+                    connection.query(
+                        query,
+                        [res.newTitle,res.newSalary,res.roleChoice,],
+                        function(err, result) {
+                            if (err) throw err;
+
+                            console.log("Successfully updated role.");
+                            init();
+                        }
+                        
+                    )
+                    
+                })
+        }
+    )
 }
 
 function remove(table) {
