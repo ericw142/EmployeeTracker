@@ -25,7 +25,7 @@ connection.connect(function(err) {
     console.log("connected as id " + connection.threadId + "\n");
     init();
 });
-
+// Prompts user to choose function
 function init() {
     inquirer.prompt([
         {
@@ -77,7 +77,7 @@ function init() {
         }
     })
 }
-
+// Function to view info from database
 function view(table) {
     // Display Employee info alongside role info
     if (table === 'employee') {
@@ -122,7 +122,7 @@ function view(table) {
     }
     
 }
-
+// Function to add data to a table
 function add(table) {
     if (table === 'employee') {
         let q = "SELECT * FROM role";
@@ -223,7 +223,7 @@ function add(table) {
         })
     }
 }
-
+// Function to update role table
 function update() {
     let query = "SELECT * FROM role";
     connection.query(
@@ -271,7 +271,7 @@ function update() {
         }
     )
 }
-
+// Function to remove data from a table
 function remove(table) {
     let query = "SELECT * FROM " + table;
     connection.query(
